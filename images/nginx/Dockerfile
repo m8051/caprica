@@ -1,4 +1,4 @@
-# Pick up the nginx base image
+# Pick up the ubuntu base image
 FROM m8051/adverts:base
 
 # Author name
