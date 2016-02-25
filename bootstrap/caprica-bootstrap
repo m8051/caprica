@@ -1,0 +1,118 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides: caprica
+# Short-Description: caprica wrapper
+# Description: This wrapper install and setup a very basic config to get docker+docker-compose ready to go
+# Author: Jordi Garcia (crawler8086@gmail.com)
+# Company: MY HOME
+# Created: 25/02/2016 14:41 IST
+### END INIT INFO
+
+# Global variable
+
+function detect_OS {
+
+        release=$(lsb_release  -r | grep "Release" | awk '{print $2}')
+        case "$release" in
+                12.04)
+                        docker_list="deb https://apt.dockerproject.org/repo ubuntu-precise main"
+                        ;;
+                14.04)
+                        docker_list="deb https://apt.dockerproject.org/repo ubuntu-trusty main"
+                        ;;
+                15.10)
+                        docker_list="deb https://apt.dockerproject.org/repo ubuntu-wily main"
+                        ;;
+                *)
+                        echo -e "\nUbuntu Release: $release not supported\n"
+                        ;;
+        esac
+	echo $docker_list
+}
+
+function install_docker {
+
+        apt-get update
+        apt-get -y install apt-transport-https ca-certificates
+        apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+        echo "deb https://apt.dockerproject.org/repo ubuntu-trusty main" >/etc/apt/sources.list.d/docker.list
+        apt-get update
+        apt-get -y install docker-engine
+        echo -e "\nEnabling Non-root users to run docker"
+        me=$(whoami)
+        usermod -a -G docker $me
+        echo -e "\nRestarting docker service\n"
+        service docker restart
+}
+
+function install_docker_compose {
+
+	echo -e "\nInstall docker-compose"
+	curl -L https://github.com/docker/compose/releases/download/1.6.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+echo -e "\nApply executable permissions to the binary\n"
+	chmod +x /usr/local/bin/docker-compose	
+}
+
+function quotes {
+
+	number=$(( $RANDOM % 7 ));
+
+	case "$number" in
+		0)
+			msg=" A long time ago in a galaxy far, far away…"
+			;;
+		1)
+			msg=" I’ve been waiting for you, Obi-Wan. We meet again, at last. The circle is now complete. When I left you, I was but the learner; now I am the master."
+			;;
+		2)
+			msg=" Remember…the Force will be with you, always"
+			;;
+		3)
+			msg=" The force is strong with this one."
+			;;
+		4)
+			msg=" Use the force."
+			;;
+		5)
+			msg=" Judge me by my size, do you?"
+			;;
+		6)
+			msg=" Do. Or do not. There is no try."
+			;;
+		7)
+			msg=" I won’t fail you. I’m not afraid. Yoda: You will be. You… will… be."
+			;;
+		*)
+			msg=" Move along ..."
+			;;
+	esac
+	echo $msg
+}
+
+function init {
+
+        docker=$(dpkg -l | grep -e docker-engine | awk '{print $1}')
+	path_dc="/usr/local/bin/docker-compose"
+        
+	if [ "$docker" == "ii" ]; then
+		docker_version=$(docker --version)
+                docker_pid=$(service docker status | awk '{print $4}')
+                echo -e "\n$docker_version | PID: $docker_pid"
+        else
+                docker_sources=$(detect_OS)
+                echo "Docker: $docker_sources"
+                install_docker
+        fi
+	
+	if [ -e "$path_dc" ]; then
+		docker_compose=$(/usr/local/bin/docker-compose --version)
+		echo -e "$docker_compose\n"
+	else
+		install_docker_compose
+	fi
+	motd=$(quotes)
+	echo -e "$motd\n"
+	
+}
+
+init
