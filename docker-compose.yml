@@ -9,5 +9,5 @@ nginx:
 
 php7-fpm:
   build: ./images/php7-fpm
-  expose:
-    - 9000
+  ports:
+    - 9001:9000
