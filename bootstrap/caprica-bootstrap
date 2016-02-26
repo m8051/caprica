@@ -49,7 +49,7 @@ function install_docker_compose {
 
 	echo -e "\nInstall docker-compose"
 	curl -L https://github.com/docker/compose/releases/download/1.6.0/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
-echo -e "\nApply executable permissions to the binary\n"
+	echo -e "\nApply executable permissions to the binary\n"
 	chmod +x /usr/local/bin/docker-compose	
 }
 
