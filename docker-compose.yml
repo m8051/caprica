@@ -2,12 +2,14 @@ nginx:
   build: ./images/nginx
   ports:
     - 8080:80
-  volumes_from:
-    - php7-fpm
   links:
+    - php7-fpm
+  volumes_from:
     - php7-fpm
 
 php7-fpm:
   build: ./images/php7-fpm
   ports:
     - 9001:9000
+  volumes:
+    - ./images/php7-fpm/code/:/var/www/
